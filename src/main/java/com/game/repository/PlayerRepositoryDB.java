@@ -4,9 +4,11 @@ import com.game.entity.Player;
 //import jdk.jfr.internal.SecuritySupport;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.hibernate.cfg.Environment;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.query.NativeQuery;
+import org.hibernate.query.Query;
 import org.springframework.stereotype.Repository;
 
 //import javax.annotation.PreDestroy;
@@ -48,26 +50,47 @@ public class PlayerRepositoryDB implements IPlayerRepository {
 
     @Override
     public int getAllCount() {
-        return 0;
+        try(Session session = sessionFactory.openSession()){
+            Query<Long> query = session.createNamedQuery("player_getAllCount", Long.class);
+            return Math.toIntExact(query.uniqueResult());
+        }
     }
 
     @Override
     public Player save(Player player) {
-        return null;
+        try(Session session = sessionFactory.openSession()){
+            Transaction transaction = session.beginTransaction();
+            session.save(player);
+            transaction.commit();
+            return player;
+        }
     }
 
     @Override
     public Player update(Player player) {
-        return null;
+        try(Session session = sessionFactory.openSession()){
+            Transaction transaction = session.beginTransaction();
+            session.update(player);
+            transaction.commit();
+            return player;
+        }
     }
 
     @Override
     public Optional<Player> findById(long id) {
-        return Optional.empty();
+        try(Session session = sessionFactory.openSession()){
+            Player player = session.find(Player.class, id);
+            return Optional.of(player);
+        }
     }
 
     @Override
     public void delete(Player player) {
+        try(Session session = sessionFactory.openSession()){
+            Transaction transaction = session.beginTransaction();
+            session.remove(player);
+            transaction.commit();
+        }
 
     }
 
